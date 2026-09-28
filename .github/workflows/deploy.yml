@@ -1,0 +1,44 @@
+name: Deploy to GitHub Pages
+
+"on":
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Find the folder to publish
+        id: find
+        run: |
+          if   [ -f docs/index.html ];        then echo "dir=docs"        >> "$GITHUB_OUTPUT"
+          elif [ -f deploy/docs/index.html ]; then echo "dir=deploy/docs" >> "$GITHUB_OUTPUT"
+          elif [ -f index.html ];             then echo "dir=."           >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Couldn't find index.html."
+            exit 1
+          fi
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ steps.find.outputs.dir }}
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
