@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Pi app · Growth Gift Planner prototype</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<style>
+  /* ── Same tokens as the app ── */
+  :root{
+    --gray-00:#fff; --gray-10:#f2f2f3; --gray-20:#dddddf; --gray-40:#bebec1;
+    --gray-50:#8a8a8f; --gray-60:#707075; --gray-70:#555558; --gray-80:#39393c;
+    --gray-90:#141415;
+    --brand:#f37521; --brand-tint:#fff2e5; --orange-70:#e5640e;
+    --rose:#c19386; --rose-20:#f5e5dc; --blue:#7d8d9d; --blue-20:#dde5ed;
+    --font:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--gray-10);font-family:var(--font);color:var(--gray-90);
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:720px;margin:0 auto;padding:56px 20px 80px}
+
+  .eyebrow{display:inline-block;padding:5px 10px;border-radius:100px;
+    background:var(--brand-tint);color:var(--orange-70);
+    font-size:12px;font-weight:700;letter-spacing:-.12px}
+  h1{margin:16px 0 0;font-size:26px;line-height:36px;letter-spacing:-.4px;font-weight:800}
+  .sub{margin:10px 0 0;font-size:14px;line-height:23px;color:var(--gray-60);max-width:52ch}
+  .warn{margin:20px 0 0;padding:12px 14px;border-radius:10px;background:var(--gray-00);
+    border:1px solid var(--gray-20);font-size:12.5px;line-height:20px;color:var(--gray-60)}
+  .warn b{color:var(--gray-80)}
+
+  .grid{display:grid;gap:14px;margin:28px 0 0}
+  @media(min-width:640px){.grid{grid-template-columns:1fr 1fr}}
+
+  .card{display:flex;flex-direction:column;background:var(--gray-00);border:1px solid var(--gray-20);
+    border-radius:14px;padding:20px;text-decoration:none;color:inherit;
+    transition:border-color .16s ease, transform .16s ease, box-shadow .16s ease}
+  .card:hover{border-color:var(--brand);transform:translateY(-2px);
+    box-shadow:0 6px 20px rgba(20,20,21,.07)}
+  .card:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
+
+  .who{display:flex;align-items:center;gap:10px}
+  .av{width:38px;height:38px;border-radius:50%;flex:none;display:grid;place-items:center;
+    font-size:14px;font-weight:800;color:var(--gray-00)}
+  .user{font-size:16px;font-weight:800;letter-spacing:-.2px}
+  .label{margin-top:2px;font-size:12px;font-weight:600;color:var(--brand)}
+
+  .note{margin:14px 0 0;font-size:13px;line-height:21px;color:var(--gray-60)}
+
+  .kids{margin:14px 0 0;padding:12px 0 0;border-top:1px solid var(--gray-10);
+    display:flex;flex-direction:column;gap:9px}
+  .kid{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+  .kname{font-size:13px;font-weight:700;color:var(--gray-70);white-space:nowrap}
+  .kmeta{font-size:12px;letter-spacing:-.2px;color:var(--gray-50);text-align:right}
+
+  .tags{margin:14px 0 0;display:flex;flex-wrap:wrap;gap:6px}
+  .tag{font-size:11px;font-weight:600;padding:4px 8px;border-radius:6px;
+    background:var(--gray-10);color:var(--gray-60)}
+  .tag.on{background:var(--rose-20);color:#8a5f52}
+  .tag.off{background:var(--blue-20);color:#4e6070}
+
+  .go{margin:16px 0 0;display:flex;align-items:center;gap:5px;
+    font-size:13px;font-weight:700;color:var(--brand)}
+
+  .plain{margin:26px 0 0;text-align:center}
+  .plain a{font-size:13px;color:var(--gray-60);text-decoration:none;border-bottom:1px solid var(--gray-20);
+    padding-bottom:2px}
+  .plain a:hover{color:var(--brand);border-color:var(--brand)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <span class="eyebrow">Internal preview · Not indexed by search engines</span>
+  <h1>Growth Gift Planner<br>Try it as each persona</h1>
+  <p class="sub">
+    Every family starts gifting at a different time, with children of different ages and
+    different gifts already made. Pick someone below to open the prototype in their situation.
+  </p>
+
+  <div class="warn">
+    <b>Note</b> · Ages are calculated from today's date. Past monthly gifts are
+    converted to their present value under Korea's periodic-gift rules and counted as allowance already used.
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <p class="plain"><a href="./">Open the default version without a persona</a></p>
+</div>
+
+<script>
+/* If the app lives at a different path, change only this. e.g. "./app/" */
+var APP = "./";
+
+var PEOPLE = [
+  { key:"youngjae", user:"Youngjae Kim", label:"A parent just getting started",
+    color:"var(--brand)",
+    note:"Their child is two. HomeTax is connected but there's no gift history yet, so the plan starts from a blank slate.",
+    tags:[["HomeTax connected","on"],["No gift history",""],["5% return",""]],
+    kids:[{n:"Youngjae Kim",m:"Feb 12, 2024 · age 2"}] },
+
+  { key:"woosik", user:"Woosik Park", label:"A parent of a grown-up child",
+    color:"var(--blue)",
+    note:"Their daughter is already 20, an adult. Planning uses the adult allowance (₩50M) only, and the ₩1M she received at 15 is still inside the 10-year window, so it counts against the allowance.",
+    tags:[["HomeTax connected","on"],["Adult allowance only","off"],["₩1M already used",""]],
+    kids:[{n:"Jieun Park",m:"Jan 14, 2006 · age 20"}] },
+
+  { key:"jihoon", user:"Jihoon Hong", label:"Giving monthly to two children",
+    color:"var(--rose)",
+    note:"Has been giving to both children every month since April 2024. Switch between them to see each one's remaining allowance.",
+    tags:[["2 children","on"],["Monthly gifts in progress",""],["10% return",""]],
+    kids:[{n:"Ian Hong",m:"Jul 14, 2016 · age 10 · ₩8.64M"},
+          {n:"Jihyun Hong",m:"Dec 18, 2018 · age 7 · ₩6.59M"}] },
+
+  { key:"hyesoo", user:"Hyesoo Jeon", label:"Expecting twins",
+    color:"var(--gray-50)",
+    note:"Due in October 2026. The babies aren't born yet, so there's nothing on HomeTax — this is about sketching a plan before they arrive.",
+    tags:[["HomeTax not connected","off"],["Twins","on"],["Before birth",""]],
+    kids:[{n:"Twin 1",m:"Due Oct 3, 2026"},
+          {n:"Twin 2",m:"Due Oct 3, 2026"}] },
+];
+
+document.getElementById("grid").innerHTML = PEOPLE.map(function(p){
+  return '<a class="card" href="' + APP + '?p=' + p.key + '">'
+    + '<div class="who">'
+    +   '<span class="av" style="background:' + p.color + '">' + p.user.charAt(0) + '</span>'
+    +   '<span><span class="user">' + p.user + '</span>'
+    +   '<span class="label" style="display:block">' + p.label + '</span></span>'
+    + '</div>'
+    + '<p class="note">' + p.note + '</p>'
+    + '<div class="kids">' + p.kids.map(function(k){
+        return '<div class="kid"><span class="kname">' + k.n + '</span>'
+             + '<span class="kmeta">' + k.m + '</span></div>';
+      }).join("") + '</div>'
+    + '<div class="tags">' + p.tags.map(function(t){
+        return '<span class="tag ' + t[1] + '">' + t[0] + '</span>';
+      }).join("") + '</div>'
+    + '<div class="go">Try it as this person →</div>'
+    + '</a>';
+}).join("");
+</script>
+</body>
+</html>
